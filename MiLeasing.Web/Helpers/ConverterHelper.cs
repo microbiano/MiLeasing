@@ -11,11 +11,14 @@ namespace MiLeasing.Web.Helpers
     public class ConverterHelper:IConverterHelper
     {
         private readonly DataContext _dataContext;
+        private readonly IComboHelper _comboHelper;
 
         public ConverterHelper(
-            DataContext dataContext)
+            DataContext dataContext,
+            IComboHelper comboHelper)
         {
             _dataContext = dataContext;
+            _comboHelper = comboHelper;
         }
        public async Task<Property> ToPropertyAsync(PropertyViewModel model, bool isNew)
         {
@@ -35,6 +38,30 @@ namespace MiLeasing.Web.Helpers
                 Rooms=model.Rooms,
                 SquareMeters=model.SquareMeters,
                 Stratum=model.Stratum
+            };
+        }
+
+        public PropertyViewModel ToPropertyViewModel(Property property)
+        {
+            return new PropertyViewModel
+            {
+                Address = property.Address,
+                Contracts = property.Contracts,
+                HasParkingLot = property.HasParkingLot,
+                Id = property.Id,
+                IsAvailable = property.IsAvailable,
+                Neighborhood = property.Neighborhood,
+                Owner = property.Owner,
+                PropertyImages = property.PropertyImages,
+                Price = property.Price,
+                PropertyType = property.PropertyType,
+                Remarks = property.Remarks,
+                Rooms = property.Rooms,
+                SquareMeters = property.SquareMeters,
+                Stratum = property.Stratum,
+                OwnerId = property.Owner.Id,
+                PropertyTypeId = property.PropertyType.Id,
+                PropertyTypes = _comboHelper.GetComboPropertyTypes()
             };
         }
     }
