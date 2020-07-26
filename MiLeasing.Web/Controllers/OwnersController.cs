@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MiLeasing.Web.Data;
 using MiLeasing.Web.Data.Entities;
+using MiLeasing.Web.Helpers;
+using MiLeasing.Web.Models;
 
 namespace MiLeasing.Web.Controllers
 {
@@ -15,11 +17,62 @@ namespace MiLeasing.Web.Controllers
     public class OwnersController : Controller
     {
         private readonly DataContext _dataContext;
+        private readonly IUserHelper _userHelper;
+        private readonly IComboHelper _comboHelper;
+        private readonly IConverterHelper _convertHelper;
 
-        public OwnersController(DataContext dataContext)
+        public OwnersController(
+            DataContext dataContext,
+            IUserHelper userHelper,
+            IComboHelper comboHelper,
+            IConverterHelper convertHelper)
         {
             _dataContext = dataContext;
+            _userHelper = userHelper;
+            _comboHelper = comboHelper;
+            _convertHelper = convertHelper;
         }
+
+
+        public async Task<IActionResult> AddProperty(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var owner = await _dataContext.Owners.FindAsync(id.Value);
+            if (owner == null)
+            {
+                return NotFound();
+            }
+
+            var model = new PropertyViewModel
+            {
+                OwnerId = owner.Id,
+                PropertyTypes = _comboHelper.GetComboPropertyTypes(),
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddProperty(PropertyViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var property = await _convertHelper.ToPropertyAsync(model, true);
+                _dataContext.Properties.Add(property);
+                await _dataContext.SaveChangesAsync();
+
+                return RedirectToAction($"Details/{model.OwnerId}");
+            }
+
+            return View(model);
+        }
+
+     
+
 
         // GET: Owners
         public IActionResult Index()
@@ -68,15 +121,55 @@ namespace MiLeasing.Web.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id")] Owner owner)
+        public async Task<IActionResult> Create(AddUserViewModel model)
         {
             if (ModelState.IsValid)
             {
-                _dataContext.Add(owner);
-                await _dataContext.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+
+                var user = await CreateUserAsync(model);
+                if (user != null)
+                {
+                    var owner = new Owner
+                    {
+                        Contracts = new List<Contract>(),
+                        Properties = new List<Property>(),
+                        User = user
+                    };
+
+                    _dataContext.Owners.Add(owner);
+                    await _dataContext.SaveChangesAsync();
+                    return RedirectToAction("Index");
+                }
+
+                ModelState.AddModelError(string.Empty,"User with this email already exists");
             }
-            return View(owner);
+            return View(model);
+        }
+
+        private async Task<User> CreateUserAsync(AddUserViewModel model)
+        {
+            var user = new User
+            {
+                Address = model.Address,
+                Document = model.Document,
+                Email = model.Username,
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                PhoneNumber = model.PhoneNumber,
+                UserName = model.Username
+            };
+
+
+            var result = await _userHelper.AddUserAsync(user,model.Password);
+
+            if (result.Succeeded)
+            {
+                user = await _userHelper.GetUserByEmailAsync(model.Username);
+                await _userHelper.AddUserToRoleAsync(user, "Owner");
+                return user;
+            }
+
+            return null;
         }
 
         // GET: Owners/Edit/5
