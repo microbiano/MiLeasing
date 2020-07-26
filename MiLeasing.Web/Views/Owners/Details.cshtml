@@ -1,53 +1,157 @@
-﻿@model MyLeasing.Web.Data.Entities.Owner
+﻿@model MiLeasing.Web.Data.Entities.Owner
 
 @{
     ViewData["Title"] = "Details";
 }
 
-<h2>Details</h2>
+<h2>Owner Details</h2>
 
 <div>
     <h4>Owner</h4>
     <hr />
     <dl class="dl-horizontal">
         <dt>
-            @Html.DisplayNameFor(model => model.Document)
+            @Html.DisplayNameFor(model => model.User.Document)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.Document)
+            @Html.DisplayFor(model => model.User.Document)
         </dd>
         <dt>
-            @Html.DisplayNameFor(model => model.FirstName)
+            @Html.DisplayNameFor(model => model.User.FirstName)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.FirstName)
+            @Html.DisplayFor(model => model.User.FirstName)
         </dd>
         <dt>
-            @Html.DisplayNameFor(model => model.LastName)
+            @Html.DisplayNameFor(model => model.User.LastName)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.LastName)
+            @Html.DisplayFor(model => model.User.LastName)
         </dd>
         <dt>
-            @Html.DisplayNameFor(model => model.FixedPhone)
+            @Html.DisplayNameFor(model => model.User.Email)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.FixedPhone)
+            @Html.DisplayFor(model => model.User.Email)
         </dd>
         <dt>
-            @Html.DisplayNameFor(model => model.CellPhone)
+            @Html.DisplayNameFor(model => model.User.Address)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.CellPhone)
+            @Html.DisplayFor(model => model.User.Address)
         </dd>
         <dt>
-            @Html.DisplayNameFor(model => model.Address)
+            @Html.DisplayNameFor(model => model.User.PhoneNumber)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.Address)
+            @Html.DisplayFor(model => model.User.PhoneNumber)
         </dd>
     </dl>
 </div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
+    <a asp-action="AddProperty" asp-route-id="@Model.Id" class="btn btn-primary">Add Property</a>
+    <a asp-action="Index" class="btn btn-success">Back to List</a>
+</div>
+<br />
+@if (Model.Properties.Count == 0)
+{
+    <h5>Not properties added yet.</h5>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Properties</h3>
+                </div>
+                <div class="panel-body">
+                    <table class="table table-hover table-responsive table-striped" id="MyTable">
+                        <thead>
+                            <tr>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.Properties.FirstOrDefault().Neighborhood)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.Properties.FirstOrDefault().Address)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.Properties.FirstOrDefault().Price)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.Properties.FirstOrDefault().SquareMeters)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.Properties.FirstOrDefault().Rooms)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.Properties.FirstOrDefault().IsAvailable)
+                                </th>
+                                <th>
+                                    @*@Html.DisplayNameFor(model => model.Properties.FirstOrDefault().Latitude)*@
+                                </th>
+                                <th>
+                                    @*@Html.DisplayNameFor(model => model.Properties.FirstOrDefault().Longitude)*@
+                                </th>
+                                <th>
+                                    Images
+                                </th>
+                                <th>
+                                    Contracts
+                                </th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Properties)
+                            {
+                                <tr>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.Neighborhood)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.Address)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.Price)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.SquareMeters)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.Rooms)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.IsAvailable)
+                                    </td>
+                                    <td>
+                                        @*Html.DisplayFor(modelItem => item.Latitude)*@
+                                    </td>
+                                    <td>
+                                        @*@Html.DisplayFor(modelItem => item.Longitude)*@
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.PropertyImages.Count)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.Contracts.Count)
+                                    </td>
+                                    <td>
+                                        <a asp-action="EditProperty" class="btn btn-default" asp-route-id="@item.Id"><i class="glyphicon glyphicon-pencil"></i> </a>
+                                        <a asp-action="DetailsProperty" class="btn btn-default" asp-route-id="@item.Id"><i class="glyphicon glyphicon-list"> </i> </a>
+                                        <button data-id="@item.Id" class="btn btn-danger deleteItem" data-toggle="modal" data-target="#deleteDialog"><i class="glyphicon glyphicon-trash"></i></button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 <div>
     <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a> |
     <a asp-action="Index">Back to List</a>

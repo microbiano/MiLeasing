@@ -1,4 +1,4 @@
-﻿using MyLeasing.Web.Data.Entities;
+﻿using MiLeasing.Web.Data.Entities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;

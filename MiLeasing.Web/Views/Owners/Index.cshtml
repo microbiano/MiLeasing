@@ -1,65 +1,39 @@
-﻿@model IEnumerable<MyLeasing.Web.Data.Entities.Owner>
+﻿@model IEnumerable<MiLeasing.Web.Data.Entities.Owner>
 
-@{
-    ViewData["Title"] = "Index";
-}
-
-<h2>Index</h2>
+<h2>Owner</h2>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    <a asp-action="Create" class="btn btn-primary">Create New</a>
 </p>
 <table class="table">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Document)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.FirstName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.LastName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.FixedPhone)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.CellPhone)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Address)
-            </th>
-            <th></th>
+            <th>@Html.DisplayNameFor(model => model.User.Document)</th>
+            <th>@Html.DisplayNameFor(model => model.User.FullName)</th>
+            <th>@Html.DisplayNameFor(model => model.User.Email)</th>
+            <th>@Html.DisplayNameFor(model => model.User.Address)</th>
+            <th>@Html.DisplayNameFor(model => model.User.PhoneNumber)</th>            
+            <th>Properties</th>
+            <th>Contracts</th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
+        @foreach (var item in Model)
+        {
         <tr>
+            <td>@Html.DisplayFor(modelItem => item.User.Document)</td>
+            <td>@Html.DisplayFor(modelItem => item.User.FullName)</td>
+            <td>@Html.DisplayFor(modelItem => item.User.Email)</td>
+            <td>@Html.DisplayFor(modelItem => item.User.Address)</td>
+            <td>@Html.DisplayFor(modelItem => item.User.PhoneNumber)</td>
+            <td>@Html.DisplayFor(modelItem => item.Properties.Count)</td>
+            <td>@Html.DisplayFor(modelItem => item.Contracts.Count)</td>
             <td>
-                @Html.DisplayFor(modelItem => item.Document)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.FirstName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.LastName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.FixedPhone)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CellPhone)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Address)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning">Edit</a> 
+                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info">Details</a> 
+                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger">Delete</a>
             </td>
         </tr>
-}
+        }
     </tbody>
 </table>

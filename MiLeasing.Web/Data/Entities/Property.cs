@@ -1,4 +1,4 @@
-﻿using MyLeasing.Web.Data.Entities;
+﻿using MiLeasing.Web.Data.Entities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -30,7 +30,7 @@ namespace MiLeasing.Web.Data.Entities
         [Required(ErrorMessage = "The field {0} is mandatory.")]
         public int SquareMeters { get; set; }
 
-        [Display(Name = "Square meters")]
+        
         [Required(ErrorMessage = "The field {0} is mandatory.")]
         public int Rooms { get; set; }
 
