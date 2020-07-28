@@ -20,17 +20,20 @@ namespace MiLeasing.Web.Controllers
         private readonly IUserHelper _userHelper;
         private readonly IComboHelper _comboHelper;
         private readonly IConverterHelper _convertHelper;
+        private readonly IImageHelper _imageHelper;
 
         public OwnersController(
             DataContext dataContext,
             IUserHelper userHelper,
             IComboHelper comboHelper,
-            IConverterHelper convertHelper)
+            IConverterHelper convertHelper,
+            IImageHelper imageHelper)
         {
             _dataContext = dataContext;
             _userHelper = userHelper;
             _comboHelper = comboHelper;
             _convertHelper = convertHelper;
+            _imageHelper = imageHelper;
         }
 
         public async Task<IActionResult> EditProperty(int? id)
@@ -111,8 +114,6 @@ namespace MiLeasing.Web.Controllers
             return View(model);
         }
   
-
-
         // GET: Owners
         public IActionResult Index()
         {
@@ -320,6 +321,95 @@ namespace MiLeasing.Web.Controllers
             return View(property);
         }
 
+        public async Task<IActionResult> AddImage(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var property = await _dataContext.Properties.FindAsync(id.Value);
+            if (property == null)
+            {
+                return NotFound();
+            }
+
+            var model = new PropertyImageViewModel
+            {
+                Id = property.Id
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddImage(PropertyImageViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var path = string.Empty;
+
+                if (model.ImageFile != null)
+                {
+                    path = await _imageHelper.UploadImageAsync(model.ImageFile);
+                }
+
+                var propertyImage = new PropertyImage
+                {
+                    ImageUrl = path,
+                    Property = await _dataContext.Properties.FindAsync(model.Id)
+                };
+
+                _dataContext.PropertyImages.Add(propertyImage);
+                await _dataContext.SaveChangesAsync();
+                return RedirectToAction($"{nameof(DetailsProperty)}/{model.Id}");
+            }
+
+            return View(model);
+        }
+
+
+        public async Task<IActionResult> AddContract(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var property = await _dataContext.Properties
+                .Include(p => p.Owner)
+                .FirstOrDefaultAsync(p => p.Id == id.Value);
+            if (property == null)
+            {
+                return NotFound();
+            }
+
+            var view = new ContractViewModel
+            {
+                OwnerId = property.Owner.Id,
+                PropertyId = property.Id,
+                Lessees = _comboHelper.GetComboLessees(),
+                Price = property.Price,
+                StartDate = DateTime.Today,
+                EndDate = DateTime.Today.AddYears(1)
+            };
+
+            return View(view);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddContract(ContractViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var contract = await _convertHelper.ToContractAsync(model,true);
+                _dataContext.Contracts.Add(contract);
+                await _dataContext.SaveChangesAsync();
+                return RedirectToAction($"{nameof(DetailsProperty)}/{model.OwnerId}");
+            }
+
+            return View(model);
+        }
 
     }
 }
