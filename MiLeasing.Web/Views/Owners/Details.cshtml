@@ -9,6 +9,7 @@
 <div>
     <h4>Owner</h4>
     <hr />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <dl class="dl-horizontal">
         <dt>
             @Html.DisplayNameFor(model => model.User.Document)
@@ -156,3 +157,24 @@ else
     <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a> |
     <a asp-action="Index">Back to List</a>
 </div>
+
+<partial name="_DeleteDialog" />
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            // Delete item
+            var item_to_delete;
+
+            $('.deleteItem').click((e) => {
+                item_to_delete = e.currentTarget.dataset.id;
+            });
+
+            $("#btnYesDelete").click(function () {
+                window.location.href = '/Owners/DeleteProperty/' + item_to_delete;
+            });
+        });
+    </script>
+}

@@ -111,6 +111,8 @@ namespace MiLeasing.Web.Controllers
                 return RedirectToAction($"Details/{model.OwnerId}");
             }
 
+            model.PropertyTypes = _comboHelper.GetComboPropertyTypes();
+
             return View(model);
         }
   
@@ -212,7 +214,7 @@ namespace MiLeasing.Web.Controllers
             return null;
         }
 
-        // GET: Owners/Edit/5
+
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -220,48 +222,51 @@ namespace MiLeasing.Web.Controllers
                 return NotFound();
             }
 
-            var owner = await _dataContext.Owners.FindAsync(id);
+            var owner = await _dataContext.Owners
+                .Include(o => o.User)
+                .FirstOrDefaultAsync(o => o.Id == id.Value);
             if (owner == null)
             {
                 return NotFound();
             }
-            return View(owner);
+
+            var model = new EditUserViewModel
+            {
+                Address = owner.User.Address,
+                Document = owner.User.Document,
+                FirstName = owner.User.FirstName,
+                Id = owner.Id,
+                LastName = owner.User.LastName,
+                PhoneNumber = owner.User.PhoneNumber
+            };
+
+            return View(model);
         }
 
-        // POST: Owners/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id")] Owner owner)
+        public async Task<IActionResult> Edit(EditUserViewModel view)
         {
-            if (id != owner.Id)
-            {
-                return NotFound();
-            }
-
             if (ModelState.IsValid)
             {
-                try
-                {
-                    _dataContext.Update(owner);
-                    await _dataContext.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!OwnerExists(owner.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                var owner = await _dataContext.Owners
+                    .Include(o => o.User)
+                    .FirstOrDefaultAsync(o => o.Id == view.Id);
+
+                owner.User.Document = view.Document;
+                owner.User.FirstName = view.FirstName;
+                owner.User.LastName = view.LastName;
+                owner.User.Address = view.Address;
+                owner.User.PhoneNumber = view.PhoneNumber;
+
+                await _userHelper.UpdateUserAsync(owner.User);
                 return RedirectToAction(nameof(Index));
             }
-            return View(owner);
+
+            return View(view);
         }
+
+
 
         // GET: Owners/Delete/5
         public async Task<IActionResult> Delete(int? id)
@@ -272,25 +277,19 @@ namespace MiLeasing.Web.Controllers
             }
 
             var owner = await _dataContext.Owners
+                .Include(o => o.User)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (owner == null)
             {
                 return NotFound();
             }
 
-            return View(owner);
-        }
-
-        // POST: Owners/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var owner = await _dataContext.Owners.FindAsync(id);
             _dataContext.Owners.Remove(owner);
             await _dataContext.SaveChangesAsync();
+            await _userHelper.DeleteUserAsync(owner.User.Email);
             return RedirectToAction(nameof(Index));
         }
+        
 
         private bool OwnerExists(int id)
         {
@@ -408,6 +407,8 @@ namespace MiLeasing.Web.Controllers
                 return RedirectToAction($"{nameof(DetailsProperty)}/{model.OwnerId}");
             }
 
+            model.Lessees =  _comboHelper.GetComboLessees();
+
             return View(model);
         }
 
@@ -486,6 +487,59 @@ namespace MiLeasing.Web.Controllers
             return RedirectToAction($"{nameof(DetailsProperty)}/{contract.Property.Id}");
         }
 
+
+        public async Task<IActionResult> DeleteProperty(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var property = await _dataContext.Properties
+                .Include(p => p.Owner)
+                .Include(p => p.PropertyImages)
+                .Include(p => p.Contracts)
+                .FirstOrDefaultAsync(pi => pi.Id == id.Value);
+
+            if (property == null)
+            {
+                return NotFound();
+            }
+
+            if (property.Contracts.Count != 0)
+            {
+                ModelState.AddModelError(string.Empty," the property can't be deleted because it has contract");
+                return RedirectToAction($"{nameof(Details)}/{property.Owner.Id}");
+            }
+
+            _dataContext.PropertyImages.RemoveRange(property.PropertyImages);            
+            _dataContext.Properties.Remove(property);
+            await _dataContext.SaveChangesAsync();
+            return RedirectToAction($"{nameof(Details)}/{property.Owner.Id}");
+        }
+
+        public async Task<IActionResult> DetailsContract(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var contract = await _dataContext.Contracts
+                .Include(c => c.Owner)
+                .ThenInclude(o => o.User)
+                .Include(c => c.Lessee)
+                .ThenInclude(o => o.User)
+                .Include(c => c.Property)
+                .ThenInclude(p => p.PropertyType)
+                .FirstOrDefaultAsync(pi => pi.Id == id.Value);
+            if (contract == null)
+            {
+                return NotFound();
+            }
+
+            return View(contract);
+        }
 
 
     }

@@ -22,10 +22,9 @@ namespace MiLeasing.Web.Helpers
 
         Task<SignInResult> LoginAsync(LoginViewModel model);
 
-        //Task<bool> DeleteUserAsync(string email);
-
+        Task<bool> DeleteUserAsync(string email);
 
         Task LogoutAsync();
-
+        Task<IdentityResult> UpdateUserAsync(User user);
     }
 }
