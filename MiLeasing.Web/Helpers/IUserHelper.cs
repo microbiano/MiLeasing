@@ -26,5 +26,8 @@ namespace MiLeasing.Web.Helpers
 
         Task LogoutAsync();
         Task<IdentityResult> UpdateUserAsync(User user);
+
+        Task<SignInResult> ValidatePasswordAsync(User user, string password);
+
     }
 }
